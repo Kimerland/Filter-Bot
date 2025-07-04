@@ -1,0 +1,24 @@
+# Python bytecode
+*.pyc
+__pycache__/
+
+# Virtual environment
+venv/
+.venv/
+
+# Editor-specific files
+.idea/  # PyCharm
+.vscode/ # VS Code
+
+# Environment variables
+.env
+
+# Database files
+*.sqlite3
+
+# Log files
+*.log
+
+# Other temporary files
+*.bak
+*.tmp
