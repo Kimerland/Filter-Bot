@@ -1,0 +1,12 @@
+{
+  "group_id_1": {
+    "short_mute": {
+      "limit": 2,
+      "duration": 2
+    },
+    "long_mute": {
+      "limit": 6,
+      "duration": 24
+    }
+  }
+}

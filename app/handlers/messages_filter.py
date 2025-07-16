@@ -11,6 +11,3 @@ async def handle_messages(message: types.Message):
 
     if container_words(message.text):
         await message.delete()
-        await message.chat.send_message(
-            f"🚫 Сообщение от @{message.from_user.username or 'пользователя'} было удалено (запрещённые слова)"
-        )
