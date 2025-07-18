@@ -1,8 +1,8 @@
 import json
 from pathlib import Path
 
-Helper = Path(__file__).resolve().parent
-Words_Path = Helper / "words.json"
+Helper = Path(__file__).resolve().parent.parent
+Words_Path = Helper / "data" / "words.json"
 
 with open(Words_Path, "r", encoding="utf-8") as f:
     data = json.load(f)
