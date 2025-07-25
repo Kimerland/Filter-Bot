@@ -1,9 +1,12 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from app.filters.mute_manager import get_group_update
+from app.filters.mute_manager import update_group_setting
+from aiogram.types import CallbackQuery, Message
 
 router = Router()
+inputs = {}
 
 @router.message(Command("start"))
 async def start_cmd(message: Message):
@@ -48,3 +51,36 @@ async def cmd_settings(message: Message):
 
     await message.answer(text, reply_markup=inline_keyword)
 
+@router.callback_query(F.data.startswith("change_"))
+async def change_setting(callback: CallbackQuery):
+    raw_type = callback.data.replace("change_", "")
+    setting_type = f"{raw_type}_mute"
+    user_id = callback.from_user.id
+
+    inputs[user_id] = {
+        "setting_type": setting_type,
+        "chat_id": callback.message.chat.id
+    }
+
+    await callback.message.answer(f"Введите новое значение для {setting_type} (формат: лимит, часы)")
+    await callback.answer()
+
+
+@router.message()
+async def catch_setting_input(message: Message):
+    user_id = message.from_user.id
+
+    if user_id not in inputs:
+        return
+    
+    try:
+        data = inputs.pop(user_id)
+        limit_str, hours_str = message.text.split(",")
+        limit = int(limit_str.strip())
+        hours = int(hours_str.strip())
+    except Exception:
+        await message.answer("❌ Неверный формат. Введите: 2, 4")
+        return
+    
+    update_group_setting(data["chat_id"], data["setting_type"], limit, hours)
+    await message.answer(f"✅ Обновлено: {data['setting_type']} → {limit} нарушений за {hours} ч.")

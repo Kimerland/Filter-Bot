@@ -8,5 +8,15 @@
       "limit": 6,
       "duration": 24
     }
+  },
+  "5103453567": {
+    "short_mute": {
+      "limit": 4,
+      "duration": 4
+    },
+    "long_mute": {
+      "limit": 6,
+      "duration": 24
+    }
   }
 }
