@@ -34,7 +34,7 @@ async def help_cmd(message: Message):
 @router.message(Command("settings"))
 async def cmd_settings(message: Message):
     chat_id = message.chat.id
-    settings = get_group_update(chat_id)
+    settings = await get_group_update(chat_id)
 
     inline_keyword = InlineKeyboardMarkup(inline_keyboard=[
     [InlineKeyboardButton(text="Короткая фильтрация", callback_data="change_short")],
@@ -82,5 +82,5 @@ async def catch_setting_input(message: Message):
         await message.answer("❌ Неверный формат. Введите: 2, 4")
         return
     
-    update_group_setting(data["chat_id"], data["setting_type"], limit, hours)
+    await update_group_setting(data["chat_id"], data["setting_type"], limit, hours)
     await message.answer(f"✅ Обновлено: {data['setting_type']} → {limit} нарушений за {hours} ч.")

@@ -1,36 +1,40 @@
-import json 
-from pathlib import Path
+from prisma.models import GroupSetting
+from app.data.database import db
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-SETTINGS_PATH = BASE_DIR / "data" / "mute_settings.json"
+DEFAULT_SETTINGS = {
+    "short_mute": {"limit": 2, "duration": 2},
+    "long_mute": {"limit": 6, "duration": 24},
+}
 
-def load_setting():
-    if SETTINGS_PATH.exists():
-        with open(SETTINGS_PATH, "r") as f:
-            return json.load(f)
-    return {}
-
-def save_setting(data):
-    print("Сохраняю настройки:", data)  
-    with open(SETTINGS_PATH, "w") as f:
-        json.dump(data, f, indent=4)
-
-def get_group_update(chat_id):
-    all_setting = load_setting()
-    return all_setting.get(str(chat_id), {
-     "short_mute": {"limit": 2, "duration": 2},
-     "long_mute": { "limit": 6, "duration": 24}
-    })
-
-def update_group_setting(chat_id, setting_type, new_limit, new_duration):
-    settings = load_setting()
-    chat_settings = settings.get(str(chat_id), {})
-
-    chat_settings[setting_type] = {
-        "limit": new_limit,
-        "duration": new_duration
-    }
+async def get_group_update(chat_id: int) -> dict:
+    setting = await db.groupsetting.find_unique(where={"chat_id": str(chat_id)})
+    if not setting:
+        return DEFAULT_SETTINGS
     
-    settings[str(chat_id)] = chat_settings
-    print(f"Сохраняю настройки для {chat_id}:", chat_settings)
-    save_setting(settings)
+    return {
+     "short_mute": {"limit": setting.short_limit, "duration": setting.short_hours},
+     "long_mute": { "limit": setting.long_limit, "duration": setting.long_hours}
+    }
+
+async def update_group_setting(chat_id: int, setting_type: str, new_limit: int, new_duration: int):
+    chat_id_str = str(chat_id)
+    setting = await db.groupsetting.find_unique(where={"chat_id": chat_id_str})
+
+    if not setting:
+        await db.groupsetting.create(
+            data={
+                "chat_id": chat_id_str,
+                "short_limit": new_limit if setting_type == "short_mute" else DEFAULT_SETTINGS["short_mute"]["limit"],
+                "short_hours": new_duration if setting_type == "short_mute" else DEFAULT_SETTINGS["short_mute"]["duration"],
+                "long_limit": new_limit if setting_type == "long_mute" else DEFAULT_SETTINGS["long_mute"]["limit"],
+                "long_hours": new_duration if setting_type == "long_mute" else DEFAULT_SETTINGS["long_mute"]["duration"],
+            }
+        )
+    else:
+        data={}
+        if setting_type == "short_mute":
+            data = {"short_limit": new_limit, "short_hours": new_duration}
+        elif setting_type == "long_mute":
+            data = {"long_limit": new_limit, "long_hours": new_duration}
+
+        await db.groupsetting.update(where={"chat_id": chat_id_str}, data=data)

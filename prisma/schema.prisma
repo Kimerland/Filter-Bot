@@ -1,0 +1,18 @@
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model GroupSetting {
+  id          Int      @id @default(autoincrement())
+  chat_id     String   @unique
+  short_limit Int
+  short_hours Int
+  long_limit  Int
+  long_hours  Int
+}
